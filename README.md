@@ -11,7 +11,7 @@ API and no longer works, as that API is no longer available. See Mr. Mangold's p
 - General code optimizations
 
 # Required parts and API access
-- 1 Raspberry Pi with active internet connection and GPIO library installed (I used a Raspberry Pi Zero W and added GPIO Pins added)
+- 1 Raspberry Pi with active internet connection and GPIO library installed (I used a Raspberry Pi Zero W and added GPIO Pins)
 - 1 Raspberry Pi breakout board (many are available, you can also use a breadboard if you want a no solder option)
 - 2 50-300 ohm resistors
 - 1 single channel 3V relay module
