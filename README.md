@@ -3,7 +3,7 @@
 This program is allows your Raspberry Pi to replace the rain bypass controller for your sprinkler system. It is written in Python 3.
 
 This program started from http://www.thirdeyevis.com/pi-page-3.php by Scott Mangold. The original program was written for the weather underground
-API and no longer works, as that API is no longer available. Mr. Mangold's page for the required Raspberry Pi parts. I made the following changes to his design:
+API and no longer works, as that API is no longer available. See Mr. Mangold's page for instructions. I made the following changes to his design:
 - Changed weather API to Dark Sky
 - Added Google Maps API to get Lat / Lon
 - Simplified the hardware to incorporate a pre-assembled relay rather than building one from components
