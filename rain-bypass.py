@@ -1,8 +1,11 @@
-import RPi.GPIO as GPIO
+#!/usr/bin/env python3
+
 import configparser
 import json
-import requests
 import time
+
+import RPi.GPIO as GPIO
+import requests
 
 # Import configuration file
 config = configparser.ConfigParser()
