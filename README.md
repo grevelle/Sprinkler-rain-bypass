@@ -27,3 +27,11 @@ API and no longer works, as that API is no longer available. See Mr. Mangold's p
 - Get precip amount from DarkSky
 - Set status
 - Set GPIO Pins
+
+# Images
+Front View
+![Picture1](IMG_0123.JPG)
+
+
+Side View
+![Picture1](IMG_0124.JPG)
