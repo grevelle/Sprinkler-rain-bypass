@@ -1,9 +1,8 @@
 # Sprinkler-rain-bypass
 This program is allows your Raspberry Pi to replace the rain bypass controller for your sprinkler system. It is written in Python 3.
 
-This program started from http://www.thirdeyevis.com/pi-page-3.php by Scott Mangold. The original program was written for the weather underground
-API and no longer works, as that API is no longer available. See Mr. Mangold's page for instructions. I made the following changes to his design:
-- Changed weather API to Dark Sky
+This program started from http://www.thirdeyevis.com/pi-page-3.php by Scott Mangold. The original program was written for the weather underground and darksky APIs, both of which are no longer available. See Mangold's page for instructions. I made the following changes to his design:
+- Changed weather API to Visual Crossing
 - Added Google Maps API to get Lat / Lon
 - Simplified the hardware to incorporate a pre-assembled relay rather than building one from components
 - Reduced the number of LEDs required
@@ -18,13 +17,13 @@ API and no longer works, as that API is no longer available. See Mr. Mangold's p
 - 1 Green led
 - 1 Red led
 - Irrigation controller with rain-bypass option
-- Dark Sky developer API account (free)
+- Visual Crossing developer API account (free)
 - Google maps developer API account (free)
 
 # Order of the program
 - Open libraries and Config File
 - Determine Lat/Lon from Google
-- Get precip amount from DarkSky
+- Get precip amount from Visual Crossing
 - Set status
 - Set GPIO Pins
 

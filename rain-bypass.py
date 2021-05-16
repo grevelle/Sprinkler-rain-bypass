@@ -3,6 +3,7 @@
 import configparser
 import json
 import time
+import datetime
 
 import RPi.GPIO as GPIO
 import requests
@@ -24,77 +25,67 @@ def getLocation():
     return (latitude, longitude)
 
 
-# Get weather from Darksky API
+# Get weather from visualcrossing API
 def getWeather():
-    # Set historical times in a list
-    weatherlookback = int(config['UserInput']['weatherlookback'])
-    DaysOfData = weatherlookback
+    # Set start and end dates in unix format
+    lookbackDays = int(config['UserInput']['weatherlookback'])
+    measurementDays = int(config['UserInput']['raindays'])
     today = int(time.time())
-    historicaltimes = []
-    for x in range(today - DaysOfData * 86400, today, 86400):
-        historicaltimes.append(x)
+    startdate = today - (lookbackDays * 86400)
+    enddate = startdate + (measurementDays * 86400)
 
     # Get location from Google Maps function and load in memory
     location = getLocation()
 
-    # Set excluded content from weather API
-    exclude = "?exclude=currently,minutely,hourly,alerts,flags"
+    # Get visualcrossing API key
+    visualcrossingKey = config['UserInput']['visualcrossingkey']
 
-    # Get darksky API key and last weather update
-    darkskyKey = config['UserInput']['darkskykey']
-    lastweatherupdate = config['ProgramModified']['lastweatherupdate']
-
-    # Download today and future data, convert from JSON to Python
-    url = "https://api.darksky.net/forecast/" + darkskyKey + "/" + str(location[0]) + "," + str(location[1]) + exclude
+    # Download data, convert from JSON to Python
+    url = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/" + str(location[0]) + "," + str(
+        location[1]) + "/" + str(int(startdate)) + "/" + str(int(enddate)) + "?key=" + visualcrossingKey + "&elements=precip&include=days"
     s = requests.get(url)
 
     # Convert future from JSON to Python
     futuredict = json.loads(s.text)
 
-    # Get historical data
-    datelist1 = []
-    for x in historicaltimes:
-        url = "https://api.darksky.net/forecast/" + darkskyKey + "/" + str(location[0]) + "," + str(
-            location[1]) + "," + str(x) + exclude
-        s = requests.get(url)
-        pastdict = json.loads(s.text)
-        for x in pastdict['daily']['data']:
-            datelist1.append([x['time'], x['precipIntensity']])
-
     # Create array to hold forecast values
     datelist2 = []
 
-    # Parse XML into array with only pretty date, epoch, and conditions forecast
-    for x in futuredict['daily']['data']:
-        datelist2.append([x['time'], x['precipIntensity']])
+    # Parse XML into array
+    for x in futuredict['days']:
+        datelist2.append(x['precip'])
 
     # Combine past and future precip lists, return [date, 24 hr rainfall] as precipamount
-    preciplist = sorted(datelist1 + datelist2)
-    precipamount = []
-    for x in preciplist:
-        precipamount.append([x[0], x[1] * 24])
+    precipamount = 0
+    for x in datelist2:
+        precipamount = precipamount + x
     return (precipamount)
 
 
-# total rainfall over 7 day forecast period
-def watering_required():
-    # return list of rainfall by day
-    rainarray = getWeather()
+# Check if calendar dates are OK to water
+def dateok():
+    dt1 = datetime.datetime(year=time.gmtime()[0], month=int(
+        config['UserInput']['firstmonthtowater']), day=int(config['UserInput']['firstdaytowater']))
+    firstdatethisyear = time.mktime(dt1.timetuple())
+    dt2 = datetime.datetime(year=time.gmtime()[0], month=int(
+        config['UserInput']['lastmonthtowater']), day=int(config['UserInput']['lastdaytowater']))
+    lastdatethisyear = time.mktime(dt2.timetuple())
+    today = int(time.time())
+    if firstdatethisyear <= today <= lastdatethisyear:
+        x = True
+    else:
+        x = False
+    return (x)
 
-    # Rain needed per rain period (inches)
+
+def watering_required():
+    # return total rainfall
+    rainfall = getWeather()
+
+    # Rain needed on the grass
     inchesrequired = float(config['UserInput']['inchesrequired'])
 
-    # Number of days in rain period
-    measurement_days = int(config['UserInput']['raindays'])
-    rainfall = 0.0
-    iteration = 0
-    for x, y in rainarray:
-        if (iteration <= measurement_days - 1):
-            rainfall += y
-            iteration += 1
-        else:
-            break
-    if rainfall <= inchesrequired:
+    if rainfall <= inchesrequired and dateok():
         watering_needed = True
     else:
         watering_needed = False
@@ -107,7 +98,8 @@ def runProgram():
     # Loop this forever
     while True:
         # Get number of daily weather updates
-        weatherupdatesperday = float(config['UserInput']['weatherupdatesperday'])
+        weatherupdatesperday = float(
+            config['UserInput']['weatherupdatesperday'])
 
         # Setup GPIO I/O Pins to output mode
         relay_GPIO = int(config['GPIO.Pins']['relayswitch'])
@@ -117,20 +109,26 @@ def runProgram():
         GPIO.setwarnings(False)
         GPIO.setup(relay_GPIO,
                    GPIO.OUT)  # This pin controls relay switch. When ON/True, watering is disabled. Default OFF
-        GPIO.setup(watering_enabled_GPIO, GPIO.OUT)  # This pin enables green light when watering
-        GPIO.setup(watering_disabed_GPIO, GPIO.OUT)  # This pin enables red light when watering disabled
+        # This pin enables green light when watering
+        GPIO.setup(watering_enabled_GPIO, GPIO.OUT)
+        # This pin enables red light when watering disabled
+        GPIO.setup(watering_disabed_GPIO, GPIO.OUT)
 
         # Set GPIO I/O Pins
         if watering_required():
-            GPIO.output(relay_GPIO, False)  # Turn off relay switch, enable watering
+            # Turn off relay switch, enable watering
+            GPIO.output(relay_GPIO, False)
             GPIO.output(watering_enabled_GPIO, True)  # Turn on green light
             GPIO.output(watering_disabed_GPIO, False)  # Turn off red light
-            config['ProgramModified']['watering_required'] = 'True'  # Update config file
+            # Update config file
+            config['ProgramModified']['watering_required'] = 'True'
         else:
-            GPIO.output(relay_GPIO, True)  # Turn on relay switch, disable watering
+            # Turn on relay switch, disable watering
+            GPIO.output(relay_GPIO, True)
             GPIO.output(watering_enabled_GPIO, False)  # Turn off green light
             GPIO.output(watering_disabed_GPIO, True)  # Turn on red light
-            config['ProgramModified']['watering_required'] = 'False'  # Update config file
+            # Update config file
+            config['ProgramModified']['watering_required'] = 'False'
 
         # Update config file with timestamp of last weather update and GPIO
         config['ProgramModified']['lastweatherupdate'] = str(time.time())
