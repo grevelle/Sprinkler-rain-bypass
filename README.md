@@ -35,17 +35,17 @@ chmod +x rain-bypass.py
 sudo nano /lib/systemd/system/rain-bypass.service
 
 ## Configure file:
-[Unit]
-Description=Rain bypass script
-After=multi-user.target
-
-[Service]
-ExecStart=/usr/bin/python3 /rain-bypass.py
-Restart=on-failure
-RestartSec=300s
-
-[Install]
-WantedBy=multi-user.target
+[Unit]  
+Description=Rain bypass script  
+After=multi-user.target  
+  
+[Service]  
+ExecStart=/usr/bin/python3 /rain-bypass.py  
+Restart=on-failure  
+RestartSec=300s  
+  
+[Install]  
+WantedBy=multi-user.target  
 
 ## Tell systemd to recognize our service
 sudo systemctl daemon-reload
