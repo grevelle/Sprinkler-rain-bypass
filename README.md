@@ -41,6 +41,8 @@ After=multi-user.target
 
 [Service]
 ExecStart=/usr/bin/python3 /rain-bypass.py
+Restart=on-failure
+RestartSec=300s
 
 [Install]
 WantedBy=multi-user.target
