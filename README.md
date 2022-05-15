@@ -27,10 +27,36 @@ This program started from http://www.thirdeyevis.com/pi-page-3.php by Scott Mang
 - Set status
 - Set GPIO Pins
 
+# Using systemd to automatically run on startup
+## Make program executable
+chmod +x rain-bypass.py
+
+## Create file:
+sudo nano /lib/systemd/system/rain-bypass.service
+
+## Configure file:
+[Unit]
+Description=Rain bypass script
+After=multi-user.target
+
+[Service]
+ExecStart=/usr/bin/python3 /rain-bypass.py
+
+[Install]
+WantedBy=multi-user.target
+
+## Tell systemd to recognize our service
+sudo systemctl daemon-reload
+
+## Tell systemd that we want our service to start on boot
+sudo systemctl enable rain-bypass.service
+
+## Reboot and check if it works
+systemctl status rain-bypass.service
+
 # Images
 Front View
 ![Picture1](IMG_0123.JPG)
-
 
 Side View
 ![Picture1](IMG_0124.JPG)
