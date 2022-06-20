@@ -31,7 +31,6 @@ This program started from http://www.thirdeyevis.com/pi-page-3.php by Scott Mang
 Place file in directory where you want it to run, I use root for the instructions below
 
 ## Make files readable, writable and executable
-cd /
 chmod +777 rain-bypass.py settings.ini
 
 ## Create file:
